@@ -1,0 +1,41 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model the remote nodes in a deployment, which are useful when modelling the data transfer
+between any resource in the deployment and external nodes. Remote nodes can be anything that require data transfer
+to and from your deployment such as users or applications outside of your deployment.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @remote_node} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span8">Name</th>
+      <th class="span15">Description</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @remote_nodes.each do |node| %>
+      <tr>
+        <td><%= best_in_place node, :name, :path => deployment_remote_node_path(@deployment, node), :inner_class => 'span7' %></td>
+        <td><%= best_in_place node, :description, :type => :textarea, :path => deployment_remote_node_path(@deployment, node), :html_attrs => {:class => 'span14'} %></td>
+        <td><div class="ui-buttonset">
+            <%= jq_button 'Delete', 'closethick', 'all', deployment_remote_node_path(@deployment, node), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @remote_node] do |f| %>
+        <td><%= f.text_field :name, :class => "span7 #{@remote_node.errors.include?(:name) ? "f_error": ""}" %></td>
+        <td><%= f.text_field :description, :class => "span14 #{@remote_node.errors.include?(:description) ? "f_error": ""}" %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @remote_nodes %>

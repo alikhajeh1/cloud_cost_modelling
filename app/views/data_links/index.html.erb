@@ -1,0 +1,67 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model data transfer costs of the deployment. Data can be transferred between
+any servers, storage units, databases and remote nodes. Note that the 'source to destination' and 'destination
+to source' data transfers represent the total amount of data transferred between the source and destination
+irrespective of the quantity of the source/destination nodes.
+</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @data_link} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span7">Source</th>
+      <th class="span7">Destination</th>
+      <th>Source to destination data/month (GB)</th>
+      <th>Destination to source data/month (GB)</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @data_links.each do |data_link| %>
+            <% source_target_pattern_hash = data_link.get_all_patterns_ordered(:source_to_target_monthly_baseline) %>
+            <% target_source_pattern_hash = data_link.get_all_patterns_ordered(:target_to_source_monthly_baseline) %>
+      <tr>
+        <td><%= best_in_place data_link, :sourcable_type_id, :type => :select, :path => deployment_data_link_path(@deployment, data_link), :html_attrs => {:class => 'span7'},
+                                          :collection => @deployment_resources.collect{|r| [r[1], r[0]]} %></td>
+        <td><%= best_in_place data_link, :targetable_type_id, :type => :select, :path => deployment_data_link_path(@deployment, data_link), :html_attrs => {:class => 'span7'},
+                                          :collection => @deployment_resources.collect{|r| [r[1], r[0]]} %></td>
+        <td><%= best_in_place data_link, :source_to_target_monthly_baseline, :path => deployment_data_link_path(@deployment, data_link), :inner_class => 'span2' %>
+             <%= pattern_button source_target_pattern_hash %>
+        </td>
+        <td><%= best_in_place data_link, :target_to_source_monthly_baseline, :path => deployment_data_link_path(@deployment, data_link), :inner_class => 'span2' %>
+             <%= pattern_button target_source_pattern_hash %></td>
+        <td><div class="ui-buttonset">
+          <%= jq_button 'Clone', 'copy', 'left', clone_deployment_data_link_path(@deployment, data_link), :method => :post %>
+          <%= jq_button 'Delete', 'closethick', 'right', deployment_data_link_path(@deployment, data_link), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => data_link, :patterns_hash => source_target_pattern_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => data_link, :patterns_hash => target_source_pattern_hash } %>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @data_link] do |f| %>
+        <td><%= select_tag "data_link[sourcable]", options_for_select(@deployment_resources, @selected_data_link_sourcable),
+                :class => 'span7', :rel => 'popover', 'data-content' => "The source of the data transfer." %></td>
+        <td><%= select_tag "data_link[targetable]", options_for_select(@deployment_resources, @selected_data_link_targetable),
+                :class => 'span7', :rel => 'popover', 'data-content' => "The destination of the data transfer." %></td>
+        <td><%= f.number_field :source_to_target_monthly_baseline,
+                :class => "span3 #{@data_link.errors.include?(:source_to_target_monthly_baseline) ? "f_error": ""}",
+                :rel => "popover", "data-content" => "The amount of data (in GB) that will be transferred from the source to the destination every month." %></td>
+        <td><%= f.number_field :target_to_source_monthly_baseline,
+                :class => "span3 #{@data_link.errors.include?(:target_to_source_monthly_baseline) ? "f_error": ""}",
+                :rel => "popover", "data-content" => "The amount of data (in GB) that will be transferred from the destination to the source every month." %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @data_links %>

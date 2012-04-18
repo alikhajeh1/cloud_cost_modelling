@@ -1,0 +1,39 @@
+<% title "Sign in" %>
+
+<div class="row">
+  <div class="span7 well">
+    <%= form_for(resource, :as => resource_name, :url => session_path(resource_name), :html => {:class => 'form-stacked'}) do |f| %>
+      <fieldset>
+        <legend>Sign in</legend>
+
+        <div class="clearfix">
+          <label for="email">Email</label>
+          <div class="input">
+            <%= f.email_field :email, :tabindex => 1 %>
+            <span class="help-inline"><%= f.check_box :remember_me %> <span id="remember_me">Remember me</span></span>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="password">Password</label>
+          <div class="input">
+            <%= f.password_field :password, :tabindex => 2 %>
+            <span class="help-inline"><%= link_to "Forgot it?", new_password_path(resource_name) %></span>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <div class="input">
+            <%= f.submit "Sign in", :class =>'btn large primary', :tabindex => 3 %>
+          </div>
+        </div>
+
+      </fieldset>
+    <% end %>
+  </div>
+
+  <div class="span5 offset2">
+    <p style="text-align: left">New to Cloud Cost Modelling?</p>
+    <%= button_to 'Sign up for free', new_registration_path(resource_name), :method => :get, :class => 'btn large success' %>
+  </div>
+</div>

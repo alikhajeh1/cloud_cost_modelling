@@ -1,0 +1,9 @@
+Date: <%= Time.now %>
+Number of users: <%= @users.length %>
+
+user_id,name,email,company,signed_up_at,last_sign_at,sign_in_count,deployment_count,report_count,server_count,storage_count,database_count,remote_node_count,additional_cost_count,pattern_count,rule_count
+<% @users.each do |u| %>
+<%= [u.id, "#{u.first_name} #{u.last_name}", u.email, u.company, u.created_at.strftime("%Y-%m-%d"), u.last_sign_in_at.strftime("%Y-%m-%d"),
+     u.sign_in_count, u.deployments.count, u.reports.count, u.servers.count, u.storages.count, u.database_resources.count,
+     u.remote_nodes.count, u.additional_costs.count, u.patterns.count, u.rules.count].join(',') %>
+<% end %>

@@ -1,0 +1,26 @@
+<% # This partial view needs the following 2 local variables to be set:
+# patternable: the active record object that the pattern applies to (e.g. an application or server)
+# patterns_hash: the hash from the pattern_mixin's get_all_patterns_ordered method
+%>
+<tr style="display:none">
+  <%= form_for(PatternMap.new, :url => multi_update_pattern_maps_path, :method => :put) do |f| %>
+    <%= f.hidden_field :patternable_type, :value => patternable.class.to_s %>
+    <%= f.hidden_field :patternable_id, :value => patternable.id %>
+    <%= f.hidden_field :patternable_attribute, :value => patterns_hash[:attribute] %>
+
+    <td colspan="100%" style="padding: 0; padding-left: 200px;">
+      <div class="row">
+        <div class="span13">
+          <% # If the selected_pattens_count is 0, then nothing is selected, otherwise the first N items are selected
+             # but since the array index starts with 0, we must select the first N-1 items %>
+          <%= f.select(:pattern, options_for_select(patterns_hash[:all_patterns].map{|p| [p.name, p.id]},
+                                                    (patterns_hash[:selected_patterns_count] == 0 ? [] : patterns_hash[:all_patterns][0..patterns_hash[:selected_patterns_count]-1].collect{|p| p.id})),
+                       {}, :multiple => true, :class => 'multiselect') %>
+        </div>
+        <div class="span5" style="margin-top:65px;">
+          <%= f.submit 'Save Changes', :class => 'btn primary' %>
+        </div>
+      </div>
+    </td>
+  <% end %>
+</tr>

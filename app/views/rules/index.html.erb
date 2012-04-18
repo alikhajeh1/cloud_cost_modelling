@@ -1,0 +1,64 @@
+<% editable_header @pattern, <<HELP
+<p>Each pattern can contain many rules. Rules describe how resource baselines change over time. For example,
+if every 2 months the amount of storage for a server should be increased by 5%, then the following rule should be created
+<code>Permanent: during every.1.year in every.2.months * 1.05</code>.
+If two rules apply during the same time period, the rules will be processed in the order defined on this page.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @rule} %>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr>
+      <th class="span1">Position</th>
+      <th>Type</th>
+      <th>Year</th>
+      <th>Month</th>
+      <th>Operation</th>
+      <th>Value</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @rules.each do |rule| %>
+      <tr>
+        <td><%= rule.position %></td>
+        <td><%= best_in_place rule, :rule_type, :path => pattern_rule_path(@pattern, rule), :html_attrs => {:class => 'span3'},
+                              :type => :select, :collection => Rule::RULE_TYPES.collect{|rt| [rt.capitalize, rt.capitalize]} %></td>
+        <td><%= best_in_place rule, :year, :path => pattern_rule_path(@pattern, rule), :inner_class => 'span3' %></td>
+        <td><%= best_in_place rule, :month, :path => pattern_rule_path(@pattern, rule), :inner_class => 'span3' %></td>
+        <td><%= best_in_place rule, :variation, :path => pattern_rule_path(@pattern, rule), :html_attrs => {:class => 'span4'},
+                              :type => :select, :collection => Rule::VARIATIONS.collect{|key,value| [key, "#{value} (#{key})",]} %></td>
+        <td><%= best_in_place rule, :value, :path => pattern_rule_path(@pattern, rule), :inner_class => 'span3' %></td>
+        <td><div class="ui-buttonset">
+          <%= jq_button 'Clone', 'copy', 'left', clone_pattern_rule_path(@pattern, rule), :method => :post %>
+          <%= jq_button 'Delete', 'closethick', nil, pattern_rule_path(@pattern, rule), :confirm => "OK to delete?", :method => :delete %>
+          <%= jq_button 'Move Higher', 'arrowthick-1-n', nil, move_higher_pattern_rule_path(@pattern, rule), :method => :post %>
+          <%= jq_button 'Move Lower', 'arrowthick-1-s', 'right', move_lower_pattern_rule_path(@pattern, rule), :method => :post %>
+        </div></td>
+      </tr>
+  <% end %>
+
+    <tr>
+      <%= form_for [@pattern, @rule] do |f| %>
+        <td></td>
+        <td><%= f.select :rule_type, Rule::RULE_TYPES.collect{|rt| rt.capitalize}, {}, :class => "span3 #{@rule.errors.include?(:rule_type) ? "f_error": ""}",
+                         :rel => "popover", "data-content" => "Changes made by temporary rules only apply for the duration of the rule. " +
+                        "Changes made by permanent rules persist, hence they change the monthly baseline after they've been applied." %></td>
+        <td><%= f.text_field :year, :class => "span3 #{@rule.errors.include?(:year) ? "f_error": ""}",
+                             :rel => "popover", "data-content" => "The years during which the rule applies, e.g.: every.1.year, every.3.years, year.4, year.4-year.6, 2015, 2015-2020." %></td>
+        <td><%= f.text_field :month, :class => "span3 #{@rule.errors.include?(:month) ? "f_error": ""}",
+                             :rel => "popover", "data-content" => "Optional field. The months during which the rule applies, e.g.: every.2.months, jun, jun-sep." %></td>
+        <td><%= f.select :variation, Rule::VARIATIONS.collect{|key,value| ["#{value} (#{key})", key]}, {}, :class => "span4 #{@rule.errors.include?(:variation) ? "f_error": ""}",
+                             :rel => "popover", "data-content" => "The operator that should be applied, e.g.: + 10 increase the baseline by 10, * 1.05 to increase the baseline by 5%, = 2 to set the baseline to 2." %></td>
+        <td><%= f.text_field :value, :class => "span3 #{@rule.errors.include?(:value) ? "f_error": ""}",
+                             :rel => "popover", "data-content" => "The operand that should be used." %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @rules %>

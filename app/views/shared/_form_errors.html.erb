@@ -1,0 +1,21 @@
+<% unless model.nil? || model.errors.empty? %>
+  <div id="form_error_modal" class="modal hide fade" style="display: none; ">
+    <div class="modal" style="position: relative; top: auto; left: auto; margin: 0 auto; z-index: 1">
+      <div class="modal-header">
+        <a href="#" class="close">×</a>
+        <h3>There is a problem with the form...</h3>
+      </div>
+      <div class="modal-body">
+        <strong>Fix the following errors and try again:</strong>
+        <ul>
+          <% model.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <a href="#" onclick="$('#form_error_modal').modal('hide')" class="btn primary">&nbsp;&nbsp;&nbsp; OK &nbsp;&nbsp;&nbsp;</a>
+      </div>
+    </div>
+  </div>
+<% end %>

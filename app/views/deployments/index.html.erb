@@ -1,0 +1,45 @@
+<% header 'Deployments', nil, <<HELP
+<p>Deployments represents groups of servers, storage and databases that belong to a system.
+Deployments can be cloned and changed to compare different cloud providers and infrastructure options.
+Each deployment has its own cost report.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @deployment} %>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th class="span14">Description</th>
+      <th class="span3">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @deployments.each do |deployment| %>
+      <tr>
+        <td>
+          <%= jq_button 'Open', 'folder-open', 'all', deployment %>
+          <%= best_in_place deployment, :name, :inner_class => 'span5' %>
+        </td>
+        <td style="vertical-align: bottom"><%= best_in_place deployment, :description, :type => :textarea, :html_attrs => {:class => 'span11'} %></td>
+        <td><div class="ui-buttonset">
+          <%= jq_button 'Cost Report', 'document', 'left', new_report_path(:report => {:reportable_type => 'Deployment', :reportable_id => deployment.id}) %>
+          <%= jq_button 'Clone', 'copy', nil, clone_deployment_path(deployment), :method => :post %>
+          <%= jq_button 'Delete', 'closethick', 'right', deployment, :confirm => "OK to delete? All of the deployment's resources will also be deleted.", :method => :delete %>
+        </div></td>
+      </tr>
+    <% end %>
+
+    <tr>
+      <%= form_for(@deployment) do |f| %>
+        <td><%= f.text_field :name, :class => (@deployment.errors.include?(:name) ? "f_error": "") %></td>
+        <td><%= f.text_field :description, :class => "span11 #{@deployment.errors.include?(:description) ? "f_error": ""}" %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @deployments %>

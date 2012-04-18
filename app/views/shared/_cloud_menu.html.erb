@@ -1,0 +1,6 @@
+<ul class="tabs">
+  <li <%= "class='active'" if controller.controller_name == 'server_types' %>><%= link_to 'Server Types', cloud_server_types_path(@cloud) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'storage_types' %>><%= link_to 'Storage Types', cloud_storage_types_path(@cloud) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'database_types' %>><%= link_to 'Database Types', cloud_database_types_path(@cloud) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'data_transfers' %>><%= link_to 'Data Transfer', cloud_data_transfers_path(@cloud) %></li>
+</ul>

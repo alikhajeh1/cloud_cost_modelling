@@ -1,0 +1,52 @@
+<% header 'Database Types - ' + @cloud.name, nil, <<HELP
+<p>These are the Database Types that this cloud provides. You can select a Database Type when creating databases in your deployments.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/cloud_menu' %>
+
+<table class="condensed-table bordered-table zebra-striped sortable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Software</th>
+      <th>CPU</th>
+      <th class="span2">Memory (GB)</th>
+      <th>Local Storage</th>
+      <th class="span2">Instance Price/ Hour (<%= @cloud.billing_currency %>)</th>
+      <th class="span2">Storage Price/GB/ Month (<%= @cloud.billing_currency %>)</th>
+      <th class="span2">Transaction Price/1 Million (<%= @cloud.billing_currency %>)</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @database_types.each do |database_type|
+         # Ideally we should put this logic in the model but doing it this way makes a huge
+         # performance gain.
+
+         # Find all CloudCostSchemes for this db_type in this cloud
+         ccs = CloudCostScheme.all(
+                 :conditions => ["cloud_id = ? AND cloud_resource_type_id = ?", @cloud.id, database_type.id],
+                 :include => [:cloud_cost_structure => :cloud_cost_tiers])
+         next if ccs.empty? # Skip this db_type if it doesn't have any CCS
+         # Lookup the relevant CloudCostStructures
+         instance_hour = ccs.select{|c| c.cloud_cost_structure.name == 'instance_hour' && c.cloud_cost_structure.valid_until.nil?}.first
+         instance_hour = instance_hour.cloud_cost_structure if instance_hour
+         storage_size  = ccs.select{|c| c.cloud_cost_structure.name == 'storage_size' && c.cloud_cost_structure.valid_until.nil?}.first
+         storage_size  = storage_size.cloud_cost_structure if storage_size
+         transaction   = ccs.select{|c| c.cloud_cost_structure.name == 'transaction' && c.cloud_cost_structure.valid_until.nil?}.first
+         transaction   = transaction.cloud_cost_structure if transaction
+    %>
+      <tr>
+        <td><%= database_type.name %></td>
+        <td><%= database_type.software %></td>
+        <td><%= database_type.cpu_values_string %></td>
+        <td><%= database_type.memory %></td>
+        <td><%= database_type.hdd_values_string %></td>
+        <td><%= instance_hour ? "#{instance_hour.tier_prices_string}" : 'N/A' %></td>
+        <td><%= storage_size ? "#{storage_size.tier_prices_string('GB')}" : 'N/A' %></td>
+        <td><%= transaction ? "#{transaction.tier_prices_string}" : 'N/A' %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

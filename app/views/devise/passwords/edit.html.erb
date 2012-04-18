@@ -1,0 +1,34 @@
+<% title "Change Password" %>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => resource} %>
+
+<div class="row">
+  <div class="span7 well">
+    <%= form_for(resource, :as => resource_name, :url => password_path(resource_name), :html => {:class => 'form-stacked', :method => :put}) do |f| %>
+      <%= f.hidden_field :reset_password_token %>
+      <fieldset>
+        <legend>Change your password</legend>
+
+        <div class="clearfix">
+          <label for="password">New password</label>
+          <div class="input">
+            <%= f.password_field :password %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="password_confirmation">Confirm new password</label>
+          <div class="input">
+            <%= f.password_field :password_confirmation %>
+          </div>
+        </div>
+        <div class="clearfix">
+          <div class="input">
+            <%= f.submit 'Change my password', :class =>'btn large primary' %>
+          </div>
+        </div>
+
+      </fieldset>
+    <% end %>
+  </div>
+</div>

@@ -1,0 +1,103 @@
+<% header 'Update Account', nil, <<HELP
+<p>Use this page to update your account details.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => resource} %>
+
+<div class="row">
+  <div class="span10 well">
+    <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => {:class => 'form-stacked', :method => :put }) do |f| %>
+      <fieldset>
+        <div class="clearfix">
+          <label for="email">Email</label>
+          <div class="input">
+            <%= f.email_field :email %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="password">New password</label>
+          <div class="input">
+            <%= f.password_field :password %>
+            <span>Leave this blank if you don't want to change it</span>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="password_confirmation">New password confirmation</label>
+          <div class="input">
+            <%= f.password_field :password_confirmation %>
+          </div>
+        </div>
+
+
+        <div class="clearfix">
+          <label for="first_name">First name</label>
+          <div class="input">
+            <%= f.text_field :first_name %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="last_name">Last name</label>
+          <div class="input">
+            <%= f.text_field :last_name %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="company">Company</label>
+          <div class="input">
+            <%= f.text_field :company %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="timezone">Timezone</label>
+          <div class="input">
+            <%= f.time_zone_select :timezone %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="timezone">Preferred currency</label>
+          <div class="input">
+            <%= f.select :currency, Money::Currency::TABLE.inject([]) { |array, (id, attributes)| array << [attributes[:name]+' (' + attributes[:iso_code] + ')', attributes[:iso_code]]}.sort!{|a, b| a <=> b} %>
+            <span>All reports will be converted to this currency</span>
+          </div>
+        </div>
+
+        <br/><br/>
+        <div class="clearfix">
+          <label for="current_password">Current password</label>
+          <div class="input">
+            <%= f.password_field :current_password %>
+            <span><b>Enter your current password to confirm your changes</b></span>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <div class="input">
+            <%= f.submit "Update", :class =>'btn large primary' %>
+          </div>
+        </div>
+
+      </fieldset>
+  <% end %>
+  </div>
+</div>
+
+<script type="text/javascript">
+  var field_updated = "<span class='flash-success'>Please note that you have to regenerate any existing reports to use this new currency, " +
+          "otherwise they will remain unchanged and show values in the old currency.</span>";
+  var alerted = false;
+  $(function(){
+    $("select#user_currency").change(function () {
+      if (!alerted) {
+        $(field_updated).purr({removeTimer: 12000});
+        alerted = true;
+      }
+    });
+  });
+</script>

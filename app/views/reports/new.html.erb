@@ -1,0 +1,90 @@
+<% header 'New Report', nil, <<HELP
+<p>Reports can be created from various models such as deployments. Reports are created by running
+simulations between a start and end date, and analysing the patterns used in the models. For example, a cost
+report for a deployment would show how the cost of that deployment would change over time based on its patterns.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @report} %>
+
+<div class="row">
+  <div class="span10 well">
+    <%= form_for(@report, :html => {:class => 'form-stacked'}) do |f| %>
+      <fieldset>
+        <div class="clearfix">
+          <label>Name</label>
+          <div class="input">
+            <%= f.text_field :name, :class => "#{@report.errors.include?(:name) ? "f_error": ""}" %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label>Description</label>
+          <div class="input">
+            <%= f.text_area :description, :rows => "3", :class => "#{@report.errors.include?(:description) ? "f_error": ""}" %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label>Report period</label>
+          <div class="input">
+            <% current_start_date = @report.start_date && @report.start_date.strftime("%Y-%m") %>
+            <%= f.text_field :start_date, :value => current_start_date || Time.now.strftime("%Y-%m"), :class => "span2 #{@report.errors.include?(:start_date) ? "f_error": ""}" %>
+            to
+            <% current_end_date = @report.end_date && @report.end_date.strftime("%Y-%m") %>
+            <%= f.text_field :end_date, :value => current_end_date || (Time.now + 35.months).strftime("%Y-%m"), :class => "span2 #{@report.errors.include?(:end_date) ? "f_error": ""}" %>
+            <span>The date range for which a report is required.</span>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label>Report source</label>
+          <div class="input">
+            <%= f.hidden_field :reportable_type %>
+            <%= f.collection_select :reportable_id, @reportables, :id, (@reportables.first.respond_to?(:name) ? :name : :id),
+                                    {}, {:class => "span4 #{@report.errors.include?(:reportable_id) ? "f_error": ""}"} %>
+            <span>The source model used to create the report.</span>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <div class="input">
+            <%= f.submit "Create Report", :class =>'btn large primary' %>
+          </div>
+        </div>
+
+      </fieldset>
+  <% end %>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(function() {
+    $("#report_start_date, #report_end_date").datepicker({
+      dateFormat: 'yy-mm',
+      changeMonth: true,
+      changeYear: true,
+      yearRange: '-0:+10',
+      showButtonPanel: true,
+      onClose: function(dateText, inst) {
+        var month = $("#ui-datepicker-div .ui-datepicker-month :selected").val();
+        var year = $("#ui-datepicker-div .ui-datepicker-year :selected").val();
+        $(this).datepicker('setDate', new Date(year, month, 1));
+      },
+      beforeShow : function(input, inst) {
+        if ((datestr = $(this).val()).length > 0) {
+          actDate = datestr.split('-');
+          year = actDate[0];
+          month = actDate[1]-1;
+          $(this).datepicker('option', 'defaultDate', new Date(year, month));
+          $(this).datepicker('setDate', new Date(year, month));
+        }
+      }
+    });
+  });
+</script>
+<style>
+  .ui-datepicker-calendar {
+    display: none;
+  }
+</style>

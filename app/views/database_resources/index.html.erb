@@ -1,0 +1,91 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model the databases in a deployment.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @database_resource} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span3">Name</th>
+      <th>Cloud and Database Type</th>
+      <th>Hours/Month</th>
+      <th>Size/Month (GB)</th>
+      <th>Transactions/Month</th>
+      <th>Quantity/Month</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @database_resources.each do |database_resource| %>
+      <% hours_patterns_hash = database_resource.get_all_patterns_ordered(:instance_hour_monthly_baseline)
+         size_patterns_hash = database_resource.get_all_patterns_ordered(:storage_size_monthly_baseline)
+         transaction_patterns_hash = database_resource.get_all_patterns_ordered(:transaction_monthly_baseline)
+         quantity_patterns_hash = database_resource.get_all_patterns_ordered(:quantity_monthly_baseline)
+         database_type_key = "#{database_resource.cloud_id}:#{database_resource.database_type_id}" %>
+      <tr>
+        <td><%= best_in_place database_resource, :name, :path => deployment_database_resource_path(@deployment, database_resource), :inner_class => 'span3' %></td>
+        <td><%= select_tag "database_resource_#{database_resource.id}_database_type", options_for_select([@cloud_database_types.find{|s| s[1] == database_type_key}], database_type_key),
+                           :class => 'chosen span6 editable_chosen' %>
+          <span style="display:none"><%= best_in_place database_resource, :database_type, :path => deployment_database_resource_path(@deployment, database_resource) %></span>
+        </td>
+        <td><%= best_in_place database_resource, :instance_hour_monthly_baseline, :path => deployment_database_resource_path(@deployment, database_resource), :inner_class => 'span1' %>
+          <%= pattern_button hours_patterns_hash %>
+        </td>
+        <td><%= best_in_place database_resource, :storage_size_monthly_baseline, :path => deployment_database_resource_path(@deployment, database_resource), :inner_class => 'span1' %>
+          <%= pattern_button size_patterns_hash %>
+        </td>
+        <td><%= best_in_place database_resource, :transaction_monthly_baseline, :path => deployment_database_resource_path(@deployment, database_resource), :inner_class => 'span3' %>
+          <%= pattern_button transaction_patterns_hash %>
+        </td>
+        <td><%= best_in_place database_resource, :quantity_monthly_baseline, :path => deployment_database_resource_path(@deployment, database_resource), :inner_class => 'span1' %>
+          <%= pattern_button quantity_patterns_hash %>
+        </td>
+        <td><div class="ui-buttonset">
+            <%= jq_button 'Clone', 'copy', 'left', clone_deployment_database_resource_path(@deployment, database_resource), :method => :post %>
+            <%= jq_button 'Delete', 'closethick', 'right', deployment_database_resource_path(@deployment, database_resource), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+            :patternable => database_resource, :patterns_hash => hours_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => database_resource, :patterns_hash => size_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => database_resource, :patterns_hash => transaction_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => database_resource, :patterns_hash => quantity_patterns_hash } %>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @database_resource] do |f| %>
+        <td><%= f.text_field :name, :class => "span3 #{@database_resource.errors.include?(:name) ? "f_error": ""}" %></td>
+        <td><%= select_tag "cloud_database_type", options_for_select(@selected_cloud_database_type ? [['', @selected_cloud_database_type]] : []),
+                           :include_blank => (@selected_cloud_database_type ? false : true), :class => 'chosen span6', 'data-placeholder' => "Select a Database Type" %></td>
+        <td><%= f.number_field :instance_hour_monthly_baseline,
+                               :class => "span3 #{@database_resource.errors.include?(:instance_hour_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of hours that the database will be running every month, e.g. 744 hours if it runs 24 hours per day." %></td>
+        <td><%= f.number_field :storage_size_monthly_baseline,
+                               :class => "span3 #{@database_resource.errors.include?(:storage_size_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline size of the database per month (in GB)." %></td>
+        <td><%= f.number_field :transaction_monthly_baseline,
+                               :class => "span3 #{@database_resource.errors.include?(:transaction_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of transactions to and from the database per month ." %></td>
+        <td><%= f.number_field :quantity_monthly_baseline,
+                               :class => "span3 #{@database_resource.errors.include?(:quantity_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of databases that will be needed every month." %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @database_resources %>
+
+<script type="text/javascript">
+  $(function(){
+    create_chosen({<%= @cloud_database_types.collect{|a| "'#{a[1]}' : '#{a[0]}'"}.join(',') %>})
+  });
+</script>

@@ -1,0 +1,23 @@
+<ul class="breadcrumb">
+  <li>
+    <%= link_to 'Cost Report', new_report_path(:report => {:reportable_type => 'Deployment', :reportable_id => @deployment.id}), :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+  <li>
+    <%= link_to 'Clone Deployment', clone_deployment_path(@deployment), :method => :post, :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+  <li>
+    <%= link_to 'Delete Deployment', @deployment, :confirm => "OK to delete? All of the deployment's resources will also be deleted.",
+                :method => :delete, :class => 'btn' %>
+  </li>
+</ul>
+
+<ul class="tabs">
+  <li <%= "class='active'" if controller.controller_name == 'servers' %>><%= link_to 'Servers', deployment_servers_path(@deployment) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'storages' %>><%= link_to 'Storage', deployment_storages_path(@deployment) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'database_resources' %>><%= link_to 'Databases', deployment_database_resources_path(@deployment) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'remote_nodes' %>><%= link_to 'Remote Nodes', deployment_remote_nodes_path(@deployment) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'data_links' %>><%= link_to 'Data Transfer', deployment_data_links_path(@deployment) %></li>
+  <li <%= "class='active'" if controller.controller_name == 'additional_costs_deployments' %>><%= link_to 'Additional Costs', deployment_additional_costs_deployments_path(@deployment) %></li>
+</ul>

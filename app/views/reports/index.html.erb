@@ -1,0 +1,74 @@
+<% header 'Reports', nil, <<HELP
+<p>This page lists the reports that you've created. Reports can be created from various models such as deployments.
+For example, a cost report for a deployment would show how the cost of that deployment would change during the reporting period
+(based on any patterns used). Reports are based on the state of their source model at the time that the report was created. So if
+you change a deployment, you should regenerate the report to reflect the changes in the deployment.
+Reports can take a while to process as they involve many calculations.</p>
+HELP
+%>
+
+<ul class="breadcrumb">
+  <li>
+    <%= link_to 'New Cost Report', new_report_path(:report => {:reportable_type => 'Deployment'}), :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+</ul>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr>
+      <th class="span5">Name</th>
+      <th class="span6">Description</th>
+      <th>Source</th>
+      <th>Report period</th>
+      <th>Generated at</th>
+      <th class="span3">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @reports.each do |report| %>
+      <tr>
+        <td>
+          <%= if report.status == 'Completed'
+                jq_button 'Open', 'folder-open', 'all', report
+              elsif report.status == 'Failed'
+                jq_button 'Report failed, please contact us.', 'alert', 'all', reports_path
+              else
+                image_tag "spinning.gif", :class => 'refresh', :rel => 'link_twipsy', :title => 'Generating report, page will auto-refresh'
+          end %>
+          <%= best_in_place report, :name, :inner_class => 'span3' %>
+        </td>
+        <td style="vertical-align: middle"><%= best_in_place report, :description, :type => :textarea, :html_attrs => {:class => 'span6'} %></td>
+        <td><%= link_to (report.reportable.name ? report.reportable.name : report.reportable.id),
+                        report.reportable %> <%= "(#{report.reportable_type.titleize})" if current_user.beta_user? %></td>
+        <td><%= best_in_place report, :display_start_date, :inner_class => 'span2 report_date' %> to
+          <%= best_in_place report, :display_end_date, :inner_class => 'span2 report_date' %></td>
+        <td><%= report.status == 'Completed' ? report.completed_at : report.status %></td>
+        <td><div class="ui-buttonset">
+          <%= jq_button 'Print', 'print', 'left', print_report_path(report), :method => :post %>
+          <%= jq_button 'Regenerate report', 'arrowrefresh-1-s', nil, regenerate_report_path(report), :method => :post %>
+          <%= jq_button 'Delete', 'closethick', 'right', report, :confirm => "OK to delete?", :method => :delete %></div>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<script type="text/javascript">
+  var field_updated = "<span class='flash-success'>Please regenerate a report if you change its reporting period and would like to update the report</span>";
+  var alerted = false;
+  $(function() {
+    $('span.best_in_place[data-attribute=display_start_date||display_end_date]').bind("ajax:success", function(){
+      if (!alerted) {
+        $(field_updated).purr({removeTimer: 8000});
+        alerted = true;
+      }
+    });
+
+    if ($('img.refresh').size() > 0)
+      window.setTimeout('location.reload()', 5000);
+  });
+</script>
+
+<%= will_paginate @reports %>

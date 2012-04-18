@@ -1,0 +1,31 @@
+<% header 'Clouds', nil, <<HELP
+<p>These are the clouds that we currently support, we will be adding more clouds soon.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @cloud} %>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr>
+      <th>Cloud Name</th>
+      <th>Billing Currency</th>
+      <th>Location</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @clouds.each do |cloud| %>
+      <tr>
+        <td style="vertical-align: bottom">
+          <%= jq_button 'Open', 'folder-open', 'all', cloud %>
+          <%= link_to cloud.name, cloud %>
+        </td>
+        <td style="vertical-align: bottom"><%= cloud.billing_currency %></td>
+        <td style="vertical-align: bottom"><%= cloud.location %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>
+
+<%= will_paginate @clouds %>

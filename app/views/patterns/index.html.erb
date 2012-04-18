@@ -1,0 +1,59 @@
+<% header 'Patterns', nil, <<HELP
+<p>Patterns can be used to describe interesting events or regular routines in a system, during which
+the resource consumption of the system changes. Patterns describe the elasticity properties of systems.
+For example, an online shopping system can use a pattern to describe how its resource needs change during
+the busy shopping season.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @pattern} %>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th class="span7">Description</th>
+      <th class="span9">Used By</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @patterns.each do |pattern| %>
+      <tr>
+        <td>
+          <%= jq_button 'Open', 'folder-open', 'all', pattern %>
+          <%= best_in_place pattern, :name, :inner_class => 'span4' %>
+        </td>
+        <td><%= best_in_place pattern, :description, :type => :textarea, :html_attrs => {:class => 'span6'} %></td>
+        <td><%  links_array = []
+                pattern.used_by.each do |pm|
+                  link_object = pm.patternable
+                  if link_object.respond_to?(:name) && !link_object.name.blank?
+                    link_name = link_object.name
+                  else
+                    link_name = pm.patternable_type.titleize
+                  end
+                  link_object = self.send("deployment_#{link_object.class.to_s.tableize}_path", pm.patternable.deployment) if pm.patternable.respond_to?(:deployment)
+                  links_array << link_to(link_name, link_object, :rel => 'link_twipsy', "data-original-title" => pm.patternable_type.titleize)
+                end %>
+                <%= raw links_array.sort.join(', ') %></td>
+        <td><div class="ui-buttonset">
+          <%= jq_button 'Clone', 'copy', 'left', clone_pattern_path(pattern), :method => :post %>
+          <%= jq_button 'Delete', 'closethick', 'right', pattern, :confirm => "OK to delete? All of the pattern's rules will also be deleted.", :method => :delete %>
+        </div></td>
+      </tr>
+    <% end %>
+
+    <tr>
+      <%= form_for(@pattern) do |f| %>
+        <td><%= f.text_field :name, :class => "span5 #{(@pattern.errors.include?(:name) ? "f_error": "")}" %></td>
+        <td><%= f.text_field :description, :class => "span6 #{@pattern.errors.include?(:description) ? "f_error": ""}" %></td>
+        <td></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @patterns %>

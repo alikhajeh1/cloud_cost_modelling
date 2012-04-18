@@ -1,0 +1,31 @@
+<% editable_header @report, <<HELP
+<p>This page shows the report contents. The report should be regenerated if its source model (e.g. deployment) has
+changed and you would like to see an updated report.</p>
+HELP
+%>
+
+<ul class="breadcrumb">
+  <li>
+    <%= link_to 'Print Report', print_report_path(@report), :method => :post, :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+  <li>
+    <%= link_to 'Regenerate Report', regenerate_report_path(@report), :method => :post, :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+  <li>
+    <%= link_to 'Delete Report', @report, :confirm => "OK to delete?", :method => :delete, :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+  <li>
+    <%= link_to @report.reportable.name, @report.reportable, :class => 'btn' unless @report.reportable.name.blank? %>
+  </li>
+</ul>
+
+<%= @report.html.html_safe %>
+
+<% if params[:action] == 'print' %>
+  <script type="text/javascript">
+    $(function() {window.print();});
+  </script>
+<% end %>

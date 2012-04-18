@@ -1,0 +1,47 @@
+<% header 'Storage Types - ' + @cloud.name, nil, <<HELP
+<p>These are the Storage Types that this cloud provides. You can select a Storage Type when creating storage units in your deployments.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/cloud_menu' %>
+
+<table class="condensed-table bordered-table zebra-striped sortable">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Storage Price (<%= @cloud.billing_currency %>) per GB per Month</th>
+      <th>Read Price (<%= @cloud.billing_currency %>)</th>
+      <th>Write Price (<%= @cloud.billing_currency %>)</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @storage_types.each do |storage_type|
+         # Ideally we should put this logic in the model but doing it this way makes a huge
+         # performance gain.
+
+         # Find all CloudCostSchemes for this storage_type in this cloud
+         ccs = CloudCostScheme.all(
+                 :conditions => ["cloud_id = ? AND cloud_resource_type_id = ?", @cloud.id, storage_type.id],
+                 :include => [:cloud_cost_structure => :cloud_cost_tiers])
+         # Skip this storage_type if it doesn't have any CCS
+         next if ccs.empty?
+         # Lookup the relevant CloudCostStructures
+         read_request = ccs.select{|c| c.cloud_cost_structure.name == 'read_request' && c.cloud_cost_structure.valid_until.nil?}.first
+         read_request = read_request.cloud_cost_structure if read_request
+         write_request = ccs.select{|c| c.cloud_cost_structure.name == 'write_request' && c.cloud_cost_structure.valid_until.nil?}.first
+         write_request = write_request.cloud_cost_structure if write_request
+         storage_size = ccs.select{|c| c.cloud_cost_structure.name == 'storage_size' && c.cloud_cost_structure.valid_until.nil?}.first
+         storage_size = storage_size.cloud_cost_structure if storage_size
+    %>
+      <tr>
+        <td><%= storage_type.name %></td>
+        <td><%= storage_type.description %></td>
+        <td><%= storage_size ? "#{storage_size.tier_prices_string('GB')}" : 'N/A' %></td>
+        <td><%= read_request ? "#{read_request.tier_prices_string} #{read_request.units}" : 'N/A' %></td>
+        <td><%= write_request ? "#{write_request.tier_prices_string} #{write_request.units}" : 'N/A' %></td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

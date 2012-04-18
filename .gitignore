@@ -1,0 +1,21 @@
+# Rails local state
+log/*.log
+tmp/
+.sass-cache/
+
+# Local system state
+.rvmrc
+.bundle
+
+# MacOSX metadata
+.DS_Store
+
+# Rubymine metadata
+.idea
+
+# Temp files
+*.swp
+*.pid
+
+# Spec coverage reports
+coverage/*

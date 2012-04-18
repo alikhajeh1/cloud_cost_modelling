@@ -1,0 +1,76 @@
+<% header 'Dashboard', nil, <<HELP
+   <p>The dashboard provides an overview of your account by showing recently updated deployments and
+   their cost reports. A list of the clouds that we currently support are also shown. We will post
+   news bulletins in the dashboard when we update this site.
+   </p>
+HELP
+%>
+
+<div class="row">
+  <div class="span16" style="text-align: center;">
+    <div class="alert-message success">
+      <p><strong>DATE:</strong> News News News.</p>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span16">
+    <h3>Getting Started</h3>
+    <ol class="getting_started">
+      <li>Read our short Getting Started Guide</li>
+      <li>Checkout a few of the <%= link_to "#{@cloud_count} clouds", clouds_path %> we currently support, we will be adding more soon</li>
+      <li>Create a <%= link_to 'deployment', deployments_path %> to see how much it would cost on the cloud
+        <% if @example_deployment %>
+            - we've already created an <%= link_to @example_deployment.name, @example_deployment %> for you
+        <% end %>
+      </li>
+      <li>Finally, please let us know what you think via the orange feedback & support button at the bottom of the page</li>
+    </ol>
+  </div>
+</div>
+
+<br/>
+<div class="row">
+  <div class="span8">
+    <h3>Deployments</h3>
+    <table class="condensed-table bordered-table zebra-striped">
+      <tr>
+        <th>Deployment</th>
+        <th>Cost report</th>
+        <th>Cost (<%= current_user.currency %>)</th>
+      </tr>
+      <% @recent_deployments.each do |deployment|  %>
+          <tr>
+            <td><%= link_to deployment.name, deployment %></td>
+            <% report = deployment.report
+               if report && report.status == 'Completed'%>
+                <td><%= link_to report.name, report %> <%= "(#{report.display_start_date} to #{report.display_end_date})" %></td>
+                <td><%= number_with_delimiter(deployment.cost) %></td>
+            <% else %>
+                <td colspan="2">No report found, <%= link_to 'click here to create one', new_report_path(:report => {:reportable_type => 'Deployment', :reportable_id => deployment.id}) %></td>
+            <% end %>
+          </tr>
+      <% end %>
+    </table>
+    <%= link_to "See all deployments", deployments_path if @more_deployments %>
+  </div>
+  <div class="span8">
+    <h3>Clouds</h3>
+    <table class="condensed-table bordered-table zebra-striped">
+      <tr>
+        <th>Provider</th>
+        <th>Clouds</th>
+      </tr>
+      <% @cloud_providers.each do |cloud_provider|  %>
+          <tr>
+            <td><%= cloud_provider.name %>
+              <br/>
+              <%= image_tag "#{cloud_provider.name.underscore}.png", :size => '20x20' %>
+            </td>
+            <td><%= raw cloud_provider.clouds.collect {|c| link_to c.name, c}.join(', ') %></td>
+          </tr>
+      <% end %>
+    </table>
+  </div>
+</div>

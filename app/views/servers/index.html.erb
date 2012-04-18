@@ -1,0 +1,75 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model the servers (or virtual machines) in a deployment.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @server} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span3">Name</th>
+      <th class="span8">Cloud and Server Type</th>
+      <th>Hours/Month</th>
+      <th>Quantity/Month</th>
+      <th class="span4">Description</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @servers.each do |server| %>
+      <% hours_patterns_hash = server.get_all_patterns_ordered(:instance_hour_monthly_baseline)
+         quantity_patterns_hash = server.get_all_patterns_ordered(:quantity_monthly_baseline)
+         server_type_key = "#{server.cloud_id}:#{server.server_type_id}"
+      %>
+      <tr>
+        <td><%= best_in_place server, :name, :path => deployment_server_path(@deployment, server), :inner_class => 'span3' %></td>
+        <td><%= select_tag "server_#{server.id}_server_type", options_for_select([@cloud_server_types.find{|s| s[1] == server_type_key}], server_type_key),
+                :class => 'chosen span8 editable_chosen' %>
+            <span style="display:none"><%= best_in_place server, :server_type, :path => deployment_server_path(@deployment, server) %></span>
+        </td>
+        <td><%= best_in_place server, :instance_hour_monthly_baseline, :path => deployment_server_path(@deployment, server), :inner_class => 'span1' %>
+            <%= pattern_button hours_patterns_hash %>
+        </td>
+        <td><%= best_in_place server, :quantity_monthly_baseline, :path => deployment_server_path(@deployment, server), :inner_class => 'span1' %>
+             <%= pattern_button quantity_patterns_hash %>
+        </td>
+        <td><%= best_in_place server, :description, :type => :textarea, :path => deployment_server_path(@deployment, server), :html_attrs => {:class => 'span4'} %></td>
+        <td><div class="ui-buttonset">
+            <%= jq_button 'Clone', 'copy', 'left', clone_deployment_server_path(@deployment, server), :method => :post %>
+            <%= jq_button 'Delete', 'closethick', 'right', deployment_server_path(@deployment, server), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+            :patternable => server, :patterns_hash => hours_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => server, :patterns_hash => quantity_patterns_hash } %>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @server] do |f| %>
+        <td><%= f.text_field :name, :class => "span3 #{@server.errors.include?(:name) ? "f_error": ""}" %></td>
+        <td><%= select_tag "cloud_server_type", options_for_select(@selected_cloud_server_type ? [['', @selected_cloud_server_type]] : []),
+                :include_blank => (@selected_cloud_server_type ? false : true), :class => 'chosen span8', 'data-placeholder' => "Select a Server Type" %></td>
+        <td><%= f.number_field :instance_hour_monthly_baseline,
+                :class => "span3 #{@server.errors.include?(:instance_hour_monthly_baseline) ? "f_error": ""}",
+                :rel => "popover", "data-content" => "The baseline number of hours that the server will be running every month, e.g. 744 hours if it runs 24 hours per day." %></td>
+        <td><%= f.number_field :quantity_monthly_baseline,
+                :class => "span3 #{@server.errors.include?(:quantity_monthly_baseline) ? "f_error": ""}",
+                :rel => "popover", "data-content" => "The baseline number of servers that will be needed every month." %></td>
+        <td><%= f.text_field :description, :class => "span4 #{@server.errors.include?(:description) ? "f_error": ""}" %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @servers %>
+
+<script type="text/javascript">
+  $(function(){
+    create_chosen({<%= @cloud_server_types.collect{|a| "'#{a[1]}' : '#{a[0]}'"}.join(',') %>})
+  });
+</script>

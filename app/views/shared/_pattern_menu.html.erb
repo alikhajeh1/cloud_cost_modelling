@@ -1,0 +1,15 @@
+<ul class="breadcrumb">
+  <li>
+    <%= link_to 'Clone Pattern', clone_pattern_path(@pattern), :method => :post, :class => 'btn' %>
+    <span class="divider"></span>
+  </li>
+  <li>
+    <%= link_to 'Delete Pattern', @pattern, :confirm => "OK to delete? All of the pattern's rules will also be deleted.",
+                :method => :delete, :class => 'btn' %>
+  </li>
+</ul>
+
+<ul class="tabs">
+  <li <%= "class='active'" if controller.controller_name == 'rules' %>><%= link_to 'Rules', pattern_rules_path(@pattern) %></li>
+  <li><a href="#">Referenced By</a></li>
+</ul>

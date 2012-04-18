@@ -1,0 +1,32 @@
+<% title "Unlock Account" %>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => resource} %>
+
+<div class="row">
+  <div class="span7 well">
+    <%= form_for(resource, :as => resource_name, :url => unlock_path(resource_name), :html => {:class => 'form-stacked'}) do |f| %>
+      <fieldset>
+        <legend>Resend unlock instructions</legend>
+
+        <div class="clearfix">
+          <label for="email">Email</label>
+          <div class="input">
+            <%= f.email_field :email %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <div class="input">
+            <%= f.submit 'Resend unlock instructions', :class =>'btn large primary span6' %>
+          </div>
+        </div>
+
+      </fieldset>
+    <% end %>
+  </div>
+
+  <div class="span5 offset2">
+    <p style="text-align: left">Already have an account?</p>
+    <%= button_to 'Sign in', root_path, :method => :get, :class => 'btn large success'%>
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model the applications or programs in a system. Applications are deployed on servers,
+where their running hours are added to for cost calculations. For example, if there are 2 applications and the first one
+runs for 8 hours per day (09:00-17:00) whilst the second one runs for 1 hour every night, then the server hosting the
+applications will need to run for 8 + 1 * 30 = 270 hours per month.
+The data transfer to and from applications is also mapped to the server hosting them.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @application} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span5">Name</th>
+      <th class="span5">Description</th>
+      <th>Hours/Month</th>
+      <th class="span5">Server</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @applications.each do |application| %>
+      <% patterns_hash = application.get_all_patterns_ordered(:instance_hour_monthly_baseline) %>
+      <tr>
+        <td><%= best_in_place application, :name, :path => deployment_application_path(@deployment, application) %></td>
+        <td><%= best_in_place application, :description, :type => :textarea, :path => deployment_application_path(@deployment, application) %></td>
+        <td><%= best_in_place application, :instance_hour_monthly_baseline, :path => deployment_application_path(@deployment, application), :inner_class => 'span2' %>
+            <%= pattern_button patterns_hash %>
+        </td>
+        <td><%= best_in_place application, :server_id, :type => :select, :path => deployment_application_path(@deployment, application),
+                                           :collection => @deployment.servers.collect{|s| [s.id, s.name]} %></td>
+        <td><div class="ui-buttonset">
+            <%= jq_button 'Clone', 'copy', 'left', clone_deployment_application_path(@deployment, application), :method => :post %>
+            <%= jq_button 'Delete', 'closethick', 'right', deployment_application_path(@deployment, application), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => application, :patterns_hash => patterns_hash } %>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @application] do |f| %>
+        <td><%= f.text_field :name, :class => (@application.errors.include?(:name) ? "f_error": "") %></td>
+        <td><%= f.text_field :description, :class => (@application.errors.include?(:description) ? "f_error": "") %></td>
+        <td><%= f.number_field :instance_hour_monthly_baseline,
+                               :class => "span2 #{@application.errors.include?(:instance_hour_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of hours that the application will be running every month, e.g. 744 hours if it runs 24 hours per day." %></td>
+        <td><%= f.collection_select :server_id, @deployment.servers.order(:name), :id, :name,
+                                    {}, {:class => (@application.errors.include?(:server_id) ? "f_error": ""),
+                                         :rel => "popover", "data-content" => "The server that hosts the application."} %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @applications %>

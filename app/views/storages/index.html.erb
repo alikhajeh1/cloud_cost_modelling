@@ -1,0 +1,93 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model the persistent storage in a deployment. Some servers
+come with ephemeral storage, you should not model those here as they are free.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @storage} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span3">Name</th>
+      <th class="span5">Cloud and Storage Type</th>
+      <th>Size/Month (GB)</th>
+      <th>Read Req./Month</th>
+      <th>Write Req./Month</th>
+      <th>Quantity/Month</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @storages.each do |storage| %>
+      <% size_patterns_hash = storage.get_all_patterns_ordered(:storage_size_monthly_baseline)
+         read_requests_hash = storage.get_all_patterns_ordered(:read_request_monthly_baseline)
+         write_requests_hash = storage.get_all_patterns_ordered(:write_request_monthly_baseline)
+         quantity_patterns_hash = storage.get_all_patterns_ordered(:quantity_monthly_baseline)
+         storage_type_key = "#{storage.cloud_id}:#{storage.storage_type_id}" %>
+    <tr>
+        <td><%= best_in_place storage, :name, :path => deployment_storage_path(@deployment, storage), :inner_class => 'span3' %></td>
+        <td><%= select_tag "storage_#{storage.id}_storage_type", options_for_select([@cloud_storage_types.find{|s| s[1] == storage_type_key}], storage_type_key),
+                           :class => 'chosen span5 editable_chosen' %>
+            <span style="display:none"><%= best_in_place storage, :storage_type, :path => deployment_storage_path(@deployment, storage) %></span>
+        </td>
+        <td><%= best_in_place storage, :storage_size_monthly_baseline, :path => deployment_storage_path(@deployment, storage), :inner_class => 'span1' %>
+            <%= pattern_button size_patterns_hash %>
+        </td>
+        <td><%= best_in_place storage, :read_request_monthly_baseline, :path => deployment_storage_path(@deployment, storage), :inner_class => 'span2' %>
+            <%= pattern_button read_requests_hash %>
+        </td>
+        <td><%= best_in_place storage, :write_request_monthly_baseline, :path => deployment_storage_path(@deployment, storage), :inner_class => 'span2' %>
+            <%= pattern_button write_requests_hash %>
+        </td>
+        <td><%= best_in_place storage, :quantity_monthly_baseline, :path => deployment_storage_path(@deployment, storage), :inner_class => 'span1' %>
+            <%= pattern_button quantity_patterns_hash %>
+        </td>
+        <td><div class="ui-buttonset">
+            <%= jq_button 'Clone', 'copy', 'left', clone_deployment_storage_path(@deployment, storage), :method => :post %>
+            <%= jq_button 'Delete', 'closethick', 'right', deployment_storage_path(@deployment, storage), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+                 :patternable => storage, :patterns_hash => size_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+                 :patternable => storage, :patterns_hash => read_requests_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+                 :patternable => storage, :patterns_hash => write_requests_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+                 :patternable => storage, :patterns_hash => quantity_patterns_hash } %>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @storage] do |f| %>
+        <td><%= f.text_field :name, :class => "span3 #{@storage.errors.include?(:name) ? "f_error": ""}" %></td>
+        <td><%= select_tag "cloud_storage_type", options_for_select(@selected_cloud_storage_type ? [['', @selected_cloud_storage_type]] : []),
+                           :include_blank => (@selected_cloud_storage_type ? false : true), :class => 'chosen span5', 'data-placeholder' => "Select a Storage Type" %></td>
+        <td><%= f.number_field :storage_size_monthly_baseline,
+                               :class => "span3 #{@storage.errors.include?(:storage_size_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline size of storage required every month." %></td>
+        <td><%= f.number_field :read_request_monthly_baseline,
+                               :class => "span3 #{@storage.errors.include?(:read_request_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of read requests per month." %></td>
+        <td><%= f.number_field :write_request_monthly_baseline,
+                               :class => "span3 #{@storage.errors.include?(:write_request_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of write requests per month." %></td>
+        <td><%= f.number_field :quantity_monthly_baseline,
+                               :class => "span3 #{@storage.errors.include?(:quantity_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of storage units that will be needed every month." %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @storages %>
+
+<script type="text/javascript">
+  $(function(){
+    // Create a key-value hash from the array
+    create_chosen({<%= @cloud_storage_types.collect{|a| "'#{a[1]}' : '#{a[0]}'"}.join(',') %>})
+  });
+</script>

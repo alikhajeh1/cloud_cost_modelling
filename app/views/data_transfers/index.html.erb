@@ -1,0 +1,53 @@
+<% header 'Data Transfer - ' + @cloud.name, nil, <<HELP
+<p>These are the data-in and data-out transfer costs for this cloud. Data transfer costs only apply for data
+transferred in and out of a cloud; data transfer within a cloud is usually free.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/cloud_menu' %>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr><th>Data In Price (<%= @cloud.billing_currency %>) per GB</th></tr>
+  </thead>
+  <tbody>
+    <%
+    # Ideally we should put this logic in the model but doing it this way makes a huge
+    # performance gain.
+
+    # Find all CloudCostSchemes for the first server_type in this cloud
+    if @server_type
+      ccs = CloudCostScheme.all(
+              :conditions => ["cloud_id = ? AND cloud_resource_type_id = ?", @cloud.id, @server_type.id],
+              :include => [:cloud_cost_structure => :cloud_cost_tiers])
+      # Lookup the relevant CloudCostStructures
+      if !ccs.empty?
+        data_in  = ccs.select{|c| c.cloud_cost_structure.name == 'data_in' && c.cloud_cost_structure.valid_until.nil?}.first
+        data_in  = data_in.cloud_cost_structure if data_in
+        data_out = ccs.select{|c| c.cloud_cost_structure.name == 'data_out' && c.cloud_cost_structure.valid_until.nil?}.first
+        data_out = data_out.cloud_cost_structure if data_out
+      end
+    end
+    %>
+    <tr>
+      <td>
+        <%= data_in ? "#{data_in.tier_prices_string('GB')}" : 'N/A' %>
+      </td>
+     </tr>
+  </tbody>
+</table>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr><th>Data Out Price (<%= @cloud.billing_currency %>) per GB</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>
+        <%= data_out ? "#{data_out.tier_prices_string('GB')}" : 'N/A'%>
+      </td>
+     </tr>
+  </tbody>
+</table>
+
+

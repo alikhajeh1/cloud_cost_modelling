@@ -1,0 +1,11 @@
+<ul class="nav">
+  <li><%= link_to 'Clouds', clouds_path %></li>
+  <li><%= link_to 'Deployments', deployments_path %></li>
+  <li><%= link_to 'Additional Costs', additional_costs_path %></li>
+  <li><%= link_to 'Patterns', patterns_path %></li>
+  <li><%= link_to 'Reports', reports_path %></li>
+</ul>
+<p class="pull-right">
+  | <%= link_to 'Update Account', edit_user_registration_path %> |
+  <%= link_to 'Logout', destroy_user_session_path, :method => :delete %> |
+</p>

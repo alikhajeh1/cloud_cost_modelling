@@ -1,0 +1,35 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to add or remove the additional costs created under the additional costs
+ menu to this deployment.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table zebra-striped">
+  <thead>
+    <tr>
+      <th class="span7">Name</th>
+      <th class="span12">Description</th>
+      <th>Actions (click to add/remove)</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @additional_costs.each do |additional_cost| %>
+      <tr>
+        <td><%= additional_cost.name %></td>
+        <td><%= additional_cost.description %></td>
+        <td><% check_box_values = @deployment.additional_costs.include?(additional_cost) ? ["Add to deployment", "Remove from deployment"] : ["Remove from deployment", "Add to deployment"]%>
+          <%= best_in_place @deployment, :additional_costs, :path => deployment_additional_costs_deployment_path(@deployment, additional_cost), :type => :checkbox, :collection => check_box_values %></td>
+      </tr>
+  <% end %>
+  </tbody>
+</table>
+
+<%= will_paginate @additional_costs %>
+<script type="text/javascript">
+  $(function(){
+    $('span.best_in_place[data-type=checkbox]').addClass('btn primary').removeClass('best_in_place');
+  });
+</script>

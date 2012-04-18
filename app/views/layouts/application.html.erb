@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title><%= yield(:title) %> - Cloud Cost Modelling</title>
+  <%= stylesheet_link_tag "application" %>
+  <%= javascript_include_tag "application" %>
+  <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+  <%= csrf_meta_tags %>
+  <%= favicon_link_tag %>
+
+  <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+  <!--[if lt IE 9]>
+  <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+
+  <style type="text/css">
+    body {
+      padding-top: 55px;
+    }
+  </style>
+  <% if user_signed_in? && current_user.sign_in_count == 1 %>
+    <script type="text/javascript">
+      $(function(){
+        $("#help").show();
+        $("#help_button").text("Hide Help");
+      });
+    </script>
+  <% end %>
+</head>
+
+<body>
+<div class="wrapper">
+  <div class="topbar" data-dropdown="dropdown">
+    <div class="topbar-inner">
+      <div class="container">
+        <h3><%= link_to 'CloudCostModelling', root_path %></h3>
+        <% if user_signed_in? %>
+          <%= render "shared/menu" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="content">
+
+      <%= yield(:header) %>
+
+      <% flash.each do |name, message| %>
+        <% name = :error if name == :alert %>
+        <% if [:warning, :error, :success, :info].include?(name)  %>
+          <div class="alert-message <%= name %> fade in" data-alert="alert">
+            <a class="close" href="#">&times;</a>
+            <p><strong><%= name.capitalize %>:</strong> <%= message %></p>
+          </div>
+        <% end %>
+      <% end %>
+
+      <%= yield %>
+    </div>
+  </div>
+  <div class="push"></div>
+</div>
+
+<div class="footer">
+  <footer>
+    <p>
+      &copy; 2012 Ali Khajeh-Hosseini, Hassan Khajeh-Hosseini</p>
+  </footer>
+</div>
+</body>
+</html>

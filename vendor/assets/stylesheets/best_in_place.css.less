@@ -1,0 +1,44 @@
+@import "twitter/bootstrap";
+
+.best_in_place {
+  padding: 0.1em;
+  cursor: hand;
+  cursor: pointer;
+}
+
+.best_in_place:hover {
+  border-bottom: 1px dashed @grayDark;
+  background-color: @yellow;
+}
+
+/* Floating message */
+.purr {
+  position: fixed;
+  width: 300px;
+  top: 60px;
+  right: 20px;
+  padding: 20px;
+  background-color: @black;
+  color: @white;
+  border: 1px solid @gray;
+  -moz-border-radius: 10px;
+  -webkit-border-radius: 10px;
+  -o-border-radius: 10px;
+  -ms-border-radius: 10px;
+  -khtml-border-radius: 10px;
+  border-radius: 10px;
+}
+
+.flash-mixin {
+  color: @white;
+}
+
+.flash-error {
+  .flash-mixin;
+  .gradientBar(#ee5f5b, #c43c35);
+}
+
+.flash-success {
+  .flash-mixin;
+  .gradientBar(#62c462, #57a957);
+}

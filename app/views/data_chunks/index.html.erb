@@ -1,0 +1,79 @@
+<% editable_header @deployment, <<HELP
+<p>This page can be used to model the application data in a system. Application data is deployed on storage nodes,
+where their storage size and read/write requests are added to for cost calculations. For example, if there are 3
+applications and each uses 2GB of data, then the storage node that hosts the application data will need to be 6GB.
+The data transfer to and from application data is also mapped to the storage node hosting them.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @data_chunk} %>
+<%= render :partial => 'shared/deployment_menu' %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span3">Name</th>
+      <th class="span4">Description</th>
+      <th>Size/Month (GB)</th>
+      <th>Read Req./Month</th>
+      <th>Write Req./Month</th>
+      <th class="span3">Storage</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @data_chunks.each do |data_chunk| %>
+      <% size_patterns_hash = data_chunk.get_all_patterns_ordered(:storage_size_monthly_baseline)
+         read_patterns_hash = data_chunk.get_all_patterns_ordered(:read_request_monthly_baseline)
+         write_patterns_hash = data_chunk.get_all_patterns_ordered(:write_request_monthly_baseline) %>
+      <tr>
+        <td><%= best_in_place data_chunk, :name, :path => deployment_data_chunk_path(@deployment, data_chunk), :inner_class => 'span3' %></td>
+        <td><%= best_in_place data_chunk, :description, :type => :textarea, :path => deployment_data_chunk_path(@deployment, data_chunk), :html_attrs => {:class => 'span4'} %></td>
+        <td><%= best_in_place data_chunk, :storage_size_monthly_baseline, :path => deployment_data_chunk_path(@deployment, data_chunk), :inner_class => 'span2' %>
+            <%= pattern_button size_patterns_hash %>
+        </td>
+        <td><%= best_in_place data_chunk, :read_request_monthly_baseline, :path => deployment_data_chunk_path(@deployment, data_chunk), :inner_class => 'span2' %>
+            <%= pattern_button read_patterns_hash %>
+        </td>
+        <td><%= best_in_place data_chunk, :write_request_monthly_baseline, :path => deployment_data_chunk_path(@deployment, data_chunk), :inner_class => 'span2' %>
+            <%= pattern_button write_patterns_hash %>
+        </td>
+        <td><%= best_in_place data_chunk, :storage_id, :type => :select, :path => deployment_data_chunk_path(@deployment, data_chunk), :html_attrs => {:class => 'span3'},
+                                          :collection => @deployment.storages.collect{|s| [s.id, s.name]} %></td>
+        <td><div class="ui-buttonset">
+            <%= jq_button 'Clone', 'copy', 'left', clone_deployment_data_chunk_path(@deployment, data_chunk), :method => :post %>
+            <%= jq_button 'Delete', 'closethick', 'right', deployment_data_chunk_path(@deployment, data_chunk), :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => data_chunk, :patterns_hash => size_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => data_chunk, :patterns_hash => read_patterns_hash } %>
+      <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => data_chunk, :patterns_hash => write_patterns_hash } %>
+  <% end %>
+
+    <tr>
+      <%= form_for [@deployment, @data_chunk] do |f| %>
+        <td><%= f.text_field :name, :class => "span3 #{@data_chunk.errors.include?(:name) ? "f_error": ""}" %></td>
+        <td><%= f.text_field :description, :class => "span4 #{@data_chunk.errors.include?(:description) ? "f_error": ""}" %></td>
+        <td><%= f.number_field :storage_size_monthly_baseline,
+                               :class => "span4 #{@data_chunk.errors.include?(:storage_size_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline size of the application data per month (in GB)." %></td>
+        <td><%= f.number_field :read_request_monthly_baseline,
+                               :class => "span4 #{@data_chunk.errors.include?(:read_request_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of read requests from the data per month." %></td>
+        <td><%= f.number_field :write_request_monthly_baseline,
+                               :class => "span4 #{@data_chunk.errors.include?(:write_request_monthly_baseline) ? "f_error": ""}",
+                               :rel => "popover", "data-content" => "The baseline number of write requests to the data per month." %></td>
+        <td><%= f.collection_select :storage_id, @deployment.storages.order(:name), :id, :name,
+                                    {}, {:class => "span3 #{@data_chunk.errors.include?(:storage_id) ? "f_error": ""}",
+                                         :rel => "popover", "data-content" => "The storage node that hosts the application data."} %></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @data_chunks %>

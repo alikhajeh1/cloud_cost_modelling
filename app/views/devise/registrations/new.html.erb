@@ -1,0 +1,68 @@
+<% title "Sign up" %>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => resource} %>
+
+<div class="row">
+  <div class="span7 well">
+    <%= form_for(resource, :as => resource_name, :url => registration_path(resource_name), :html => {:class => 'form-stacked'}) do |f| %>
+      <fieldset>
+        <legend>Sign up</legend>
+
+        <div class="clearfix">
+          <label for="email">Email</label>
+          <div class="input">
+            <%= f.email_field :email %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="password">Password</label>
+          <div class="input">
+            <%= f.password_field :password %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="password_confirmation">Password confirmation</label>
+          <div class="input">
+            <%= f.password_field :password_confirmation %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="first_name">First name</label>
+          <div class="input">
+            <%= f.text_field :first_name %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="last_name">Last name</label>
+          <div class="input">
+            <%= f.text_field :last_name %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <label for="company">Company</label>
+          <div class="input">
+            <%= f.text_field :company %>
+          </div>
+        </div>
+
+        <div class="clearfix">
+          <div class="input">
+            <%= f.submit "Sign up", :class =>'btn large primary' %>
+          </div>
+        </div>
+
+        <p style="width: 1px; height: 1px; overflow: hidden;">Please ignore the following fields: <%= f.text_area :comment, :style => "display:none" %><%= f.text_area :homepage, :style => "display:none", :value => resource.homepage || Time.now %></p>
+      </fieldset>
+    <% end %>
+  </div>
+
+  <div class="span5 offset2">
+    <p style="text-align: left">Already have an account?</p>
+    <%= button_to 'Sign in', root_path, :method => :get, :class => 'btn large success'%>
+  </div>
+</div>

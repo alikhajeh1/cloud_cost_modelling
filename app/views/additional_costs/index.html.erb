@@ -1,0 +1,54 @@
+<% header 'Additional Costs', nil, <<HELP
+<p>Deployments often have additional costs such as staff and software licencing costs.
+These general cost categories can be created here and used in different deployments.
+You can change your preferred currency by <a href="/users/edit">updating your account</a>.</p>
+HELP
+%>
+
+<%= render :partial => 'shared/form_errors', :locals => {:model => @additional_cost} %>
+
+<table class="condensed-table bordered-table">
+  <thead>
+    <tr>
+      <th class="span5">Name</th>
+      <th class="span5">Description</th>
+      <th>Cost/Month (<%=current_user.currency %>)</th>
+      <th class="span4">Used By</th>
+      <th class="span2">Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    <% @additional_costs.each do |additional_cost| %>
+      <% patterns_hash = additional_cost.get_all_patterns_ordered(:cost_monthly_baseline) %>
+      <tr>
+        <td><%= best_in_place additional_cost, :name, :inner_class => "span5"%></td>
+        <td><%= best_in_place additional_cost, :description, :type => :textarea, :html_attrs => {:class => 'span8'} %></td>
+        <td><%= best_in_place additional_cost, :cost_monthly_baseline, :inner_class => "span2"%>
+          <%= pattern_button patterns_hash %></td>
+        <td><%= raw additional_cost.deployments.collect {|deployment| link_to deployment.name, deployment}.join(', ') %></td>
+        <td><div class="ui-buttonset">
+          <%= jq_button 'Clone', 'copy', 'left', clone_additional_cost_path(additional_cost), :method => :post %>
+          <%= jq_button 'Delete', 'closethick', 'right', additional_cost, :confirm => "OK to delete?", :method => :delete %>
+        </div></td>
+      </tr>
+        <%= render :partial => 'shared/pattern_attachment', :locals => {
+              :patternable => additional_cost, :patterns_hash => patterns_hash } %>
+    <% end %>
+
+    <tr>
+      <%= form_for(@additional_cost) do |f| %>
+        <td><%= f.text_field :name, :class => "span5 #{@additional_cost.errors.include?(:name) ? "f_error": ""}" %></td>
+        <td><%= f.text_field :description, :class => "span8 #{@additional_cost.errors.include?(:description) ? "f_error": ""}"%></td>
+        <td><%= f.number_field :cost_monthly_baseline,
+                             :class => "span2 #{@additional_cost.errors.include?(:cost_monthly_baseline) ? "f_error": ""}",
+                             :rel => "popover", "data-content" => "The monthly cost (#{current_user.currency}) of this category." %>
+        </td>
+        <td></td>
+        <td><%= f.submit "Create", :class =>'btn primary' %></td>
+      <% end %>
+    </tr>
+  </tbody>
+</table>
+
+<%= will_paginate @additional_costs %>
